@@ -22,11 +22,15 @@ loosely, so these all work:
 | Needs | Accepted header spellings |
 |---|---|
 | model | `model`, `model_id`, `engine`, `deployment` |
-| cost | `cost`, `total_cost`, `spend`, `amount`, `billed_cost` |
-| calls | `calls`, `requests`, `api_calls`, `count` |
-| input tokens | `input_tokens`, `prompt_tokens`, `prompt` |
-| output tokens | `output_tokens`, `completion_tokens`, `completion` |
+| cost | `cost`, `total_cost`, `spend`, `amount`, `billed_cost`, `cost_usd` |
+| calls | `calls`, `requests`, `api_calls`, `count`, `num_requests` |
+| input tokens | `input_tokens`, `prompt_tokens`, `prompt`, `tokens_prompt`, `n_context_tokens_total` |
+| output tokens | `output_tokens`, `completion_tokens`, `completion`, `tokens_completion`, `n_generated_tokens_total` |
 | failures | `errors`, `failed`, `retries`, `failures` |
+
+Bucketed exports are fine. A per-day, per-model file (OpenRouter activity,
+OpenAI org usage, Anthropic usage) collapses to one row per provider and model
+with the daily figures summed, so the report talks about models, not days.
 
 ```csv
 provider,model,requests,prompt_tokens,completion_tokens,total_cost,failed

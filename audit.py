@@ -26,15 +26,35 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Header aliases, lowercased and stripped of spaces/underscores.
+# Header aliases, lowercased and stripped of spaces/underscores. The extra
+# spellings cover the exports these providers actually hand you: OpenRouter
+# activity ("Tokens Prompt"/"Tokens Completion"), OpenAI org usage
+# ("n_context_tokens_total"), Anthropic usage, and LiteLLM spend logs.
 ALIASES = {
     "provider": ("provider", "vendor", "api", "service", "source"),
     "model": ("model", "modelid", "modelname", "engine", "deployment"),
-    "calls": ("calls", "requests", "nrequests", "count", "apiCalls".lower()),
-    "input_tokens": ("inputtokens", "prompttokens", "prompt", "intokens", "input"),
-    "output_tokens": ("outputtokens", "completiontokens", "completion", "outtokens", "output"),
-    "cost": ("cost", "totalcost", "spend", "amount", "billedcost", "usd"),
-    "errors": ("errors", "failed", "failedcalls", "failures", "retries", "status5xx"),
+    "calls": (
+        "calls", "requests", "nrequests", "count", "apicalls",
+        "requestcount", "numrequests", "numcalls",
+    ),
+    "input_tokens": (
+        "inputtokens", "prompttokens", "prompt", "intokens", "input",
+        "tokensprompt", "prompttoken", "inputtokencount", "ncontexttokenstotal",
+    ),
+    "output_tokens": (
+        "outputtokens", "completiontokens", "completion", "outtokens", "output",
+        "tokenscompletion", "completiontoken", "outputtokencount",
+        "ngeneratedtokenstotal",
+    ),
+    "cost": (
+        "cost", "totalcost", "spend", "amount", "billedcost", "usd",
+        "costusd", "spendusd", "totalcostusd", "billedcostusd", "amountusd",
+        "totalspend",
+    ),
+    "errors": (
+        "errors", "failed", "failedcalls", "failures", "retries", "status5xx",
+        "errorcount", "failedrequests", "numerrors",
+    ),
 }
 
 # A lever is only reported when its own arithmetic clears a threshold, so a
@@ -150,7 +170,30 @@ def load(path: str | Path) -> list[Usage]:
                 errors=_num(get("errors")),
             )
         )
-    return [r for r in out if r.cost > 0 or r.tokens > 0]
+    return _merge(out)
+
+
+def _merge(rows: list[Usage]) -> list[Usage]:
+    """Sum rows into one per provider+model.
+
+    Every real export is bucketed (one row per day, often per key), so the same
+    model shows up dozens of times. The levers reason about a model, not a day.
+    """
+    merged: dict[tuple[str, str], Usage] = {}
+    for r in rows:
+        if r.cost <= 0 and r.tokens <= 0:
+            continue
+        key = (r.provider, r.model)
+        m = merged.get(key)
+        if m is None:
+            merged[key] = r
+            continue
+        m.calls += r.calls
+        m.input_tokens += r.input_tokens
+        m.output_tokens += r.output_tokens
+        m.cost += r.cost
+        m.errors += r.errors
+    return list(merged.values())
 
 
 def _pct(part: float, whole: float) -> str:
@@ -358,6 +401,20 @@ def _self_test() -> int:
         ]}))
         rows3 = load(j)
         assert rows3[0].cost == 2.5 and rows3[0].calls == 5, rows3[0]
+
+        # A per-day export repeats the same model; it must collapse to one row
+        # with the daily figures summed, not 3 competing rows for one model.
+        daily = Path(td) / "daily.csv"
+        daily.write_text(
+            "date,model,provider,tokens_prompt,tokens_completion,cost_usd,num_requests\n"
+            "2026-11-01,m1,p,1000,500,1.50,10\n"
+            "2026-11-02,m1,p,2000,900,3.00,20\n"
+            "2026-11-03,m2,p,100,100,0.50,5\n"
+        )
+        rows4 = {r.model: r for r in load(daily)}
+        assert set(rows4) == {"m1", "m2"}, rows4
+        assert rows4["m1"].cost == 4.5, rows4["m1"]
+        assert rows4["m1"].input_tokens == 3000 and rows4["m1"].calls == 30, rows4["m1"]
 
     print("audit self-test: OK")
     return 0
