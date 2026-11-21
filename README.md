@@ -88,6 +88,20 @@ tokens, cost; drop account ids, keys, prompt text) and the same four levers come
 back as a written read of where the bill goes, priced against your own numbers
 rather than a list price. The contact address lives in the repository profile.
 
+The free read stays free, including when it concludes nothing is worth fixing.
+Two paid things exist beyond it, and neither replaces the reader above:
+
+- **Config pack, $99, paid up front.** A reviewed gateway configuration built
+  around the keys and vendors you already pay, plus this tool wired to your
+  logs. Fixed scope, delivered as files.
+- **Spend review, 25% of the first year's verified savings, minimum $500,
+  capped at $1,500.** Quoted only after the free read, and invoiced once the
+  saving shows in a second month's export. The floor and the delay are the same
+  fact: verification costs a month.
+
+Neither offer routes a paid workload through free-tier or keyless endpoints.
+That gets the buyer's keys and IPs banned, which is not a saving.
+
 ## License
 
 MIT.
