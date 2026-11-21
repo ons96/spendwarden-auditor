@@ -1,5 +1,7 @@
 # spendwarden-auditor
 
+[![self-test](https://github.com/ons96/spendwarden-auditor/actions/workflows/selftest.yml/badge.svg)](https://github.com/ons96/spendwarden-auditor/actions/workflows/selftest.yml)
+
 Find the money in an LLM bill from your own usage export. One file, standard
 library only, Python 3.10 or newer, no network calls, nothing leaves the
 machine.
@@ -61,6 +63,30 @@ on what you were actually billed.
 
 It also cannot tell you whether a cheaper model is good enough for a given task.
 That is a measurement against real traffic, not a lookup.
+
+## Getting your data out
+
+Every provider hides it somewhere different. These are the paths that produce a
+file this tool reads:
+
+| Provider | Where | What you get |
+|---|---|---|
+| OpenRouter | Activity page, download CSV | per-model, per-day spend |
+| OpenAI | Org settings, usage, export | per-model daily token counts; add billed cost |
+| Anthropic | Console, usage, export | per-model daily tokens |
+| LiteLLM or a gateway | spend logs table | cost and tokens per request |
+| Your own proxy | whatever you log | keep `provider`, `model`, `cost`, tokens |
+
+If the export has tokens but no dollar figure, add a cost column using the rate
+you were actually charged. A guessed rate produces a guessed ceiling, and the
+report will say which lever rests on it.
+
+## If you would rather someone else read it
+
+The tool is the free half. Send an anonymised export (model names, calls,
+tokens, cost; drop account ids, keys, prompt text) and the same four levers come
+back as a written read of where the bill goes, priced against your own numbers
+rather than a list price. The contact address lives in the repository profile.
 
 ## License
 
