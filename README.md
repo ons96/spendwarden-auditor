@@ -1,7 +1,8 @@
 # spendwarden-auditor
 
 Find the money in an LLM bill from your own usage export. One file, standard
-library only, no network calls, nothing leaves the machine.
+library only, Python 3.10 or newer, no network calls, nothing leaves the
+machine.
 
 ```sh
 python3 audit.py usage.csv                    # markdown report to stdout
