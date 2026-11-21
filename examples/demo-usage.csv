@@ -1,0 +1,4 @@
+provider,model,requests,prompt_tokens,completion_tokens,total_cost,failed
+acme,big-model,1000,1800000,200000,900.00,150
+acme,small-model,4000,100000,200000,40.00,0
+other,cheap-model,500,50000,50000,5.00,0

@@ -10,6 +10,10 @@ python3 audit.py usage.csv --json             # findings as JSON
 python3 audit.py --self-test                  # asserts the levers fire and stay quiet
 ```
 
+See what it prints without running anything:
+[`examples/demo-report.md`](examples/demo-report.md), built from
+[`examples/demo-usage.csv`](examples/demo-usage.csv).
+
 ## Input
 
 Anything with a cost column per model. CSV or JSON, header names are matched
